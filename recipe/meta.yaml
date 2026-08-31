@@ -1,45 +1,70 @@
-{% set name = "<PLEASE ADD PKG NAME>" %}
-{% set version = "<PLEASE ADD PKG VERSION>" %}
+{% set name = "gribberish" %}
+{% set version = "1.5.0" %}
 
 package:
-  name: {{ name|lower }}
+  name: {{ name }}
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: <sha256>
+  url: https://github.com/mpiannucci/{{ name }}/archive/refs/tags/{{ version }}.tar.gz
+  sha256: 7a6bf345e904f316ab8f9f094ceae556b8f15f63eb1c4caa949c8dd9dc7a4259
 
 build:
   number: 0
-  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
-  skip: True  # [py<38]
+  script:
+    - {{ PYTHON }} -m pip install ./python -vv --no-deps --no-build-isolation
+    - cargo-bundle-licenses --format yaml --output THIRDPARTY.yml
+  skip: true  # [py<312]
 
 requirements:
+  build:
+    - {{ stdlib("c") }}
+    - {{ compiler("c") }}
+    - {{ compiler("rust") }}
+    - cargo-bundle-licenses
   host:
     - python
     - pip
+    - maturin >=1.5,<2
+    - numpy {{ numpy }}
   run:
     - python
+    - numpy >=2
+  run_constraid:
+    - xarray >=2025.6.0
+    - zarr >=3.1.1
+    - virtualizarr >=2.6
 
 test:
+  source_files:
+    - python/tests
+    - test-data
   imports:
-    - {{ name.replace('-', '.') }}
+    - gribberish
   requires:
     - pip
+    - pytest
+    - numpy
   commands:
     - pip check
+    - test -f $SP_DIR/gribberish/_gribberish_python*.so #[unix]
+    - if not exist %SP_DIR%\gribberish\_gribberish_python*.pyd exit 1 #[win]
+    - pytest -v python/tests/test_dataset_determinism.py python/tests/test_ifs_sst_param_fix.py python/tests/test_north_up_real_world.py
 
 about:
-  home: <PLEASE ADD HOME URL>
-  summary: <PLEASE ADD SUMMARY>
+  home: https://github.com/mpiannucci/gribberish
+  summary: Parse GRIB2 files with Rust
   description: |
-    <PLEASE ADD DESCRIPTION>
-  license: <PLEASE ADD LICENSE>
-  license_family: <PLEASE ADD LICENSE_FAMILY>
-  license_file: <PLEASE_ADD_LICENSE_FILE>
-  dev_url: <PLEASE ADD DEV URL>
-  doc_url: <PLEASE ADD DOC URL>
+    gribberish is a Python package backed by Rust for reading and parsing
+    GRIB meteorological data.
+  license: MIT
+  license_family: MIT
+  license_file:
+    - LICENSE
+    - THIRDPARTY.yml
+  dev_url: https://github.com/mpiannucci/gribberish
+  doc_url: https://github.com/mpiannucci/gribberish
 
 extra:
   recipe-maintainers:
-    - Jrice1317
+    - olksgdm
