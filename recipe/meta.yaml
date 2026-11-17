@@ -1,5 +1,5 @@
 {% set name = "gribberish" %}
-{% set version = "1.5.0" %}
+{% set version = "1.10.0" %}
 
 package:
   name: {{ name }}
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://github.com/mpiannucci/{{ name }}/archive/refs/tags/{{ version }}.tar.gz
-  sha256: 7a6bf345e904f316ab8f9f094ceae556b8f15f63eb1c4caa949c8dd9dc7a4259
+  sha256: 3383ff208007010f94c5f4b3134119573a6d7aff0edc86461d4176d0ed236b3c
 
 build:
   number: 0
@@ -30,7 +30,7 @@ requirements:
   run:
     - python
     - numpy >=2
-  run_constraid:
+  run_constrained:
     - xarray >=2025.6.0
     - zarr >=3.1.1
     - virtualizarr >=2.6
